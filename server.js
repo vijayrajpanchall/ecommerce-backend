@@ -1,8 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const app = express();
+const authRoutes = require('./src/routers/auth');
 require('dotenv').config();
+
+const app = express();
+
+// routers -> paths -> address -> url
+app.use('/auth', authRoutes);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,9 +25,6 @@ db.authenticate().then(() => {
     console.error('Unable to connect to the database: ', error);
 });
 
-// routers -> paths -> address -> url
-const authRoutes = require('./src/routers/auth');
-
-app.use('/auth', authRoutes);
-
-app.listen(3000);
+app.listen(3000, () => {
+    console.log(`Server is up and running on 3000 ...`);
+});
