@@ -3,9 +3,15 @@ const errorMsgs = require("../core/static/error-msgs/user");
 const User = require("../model/users/users");
 
 const findUser = async (fieldName, value) => {
-    const user = await User.findOne({ where: { [fieldName]: value } });
-    if (!user) throw errorMsgs.USER_NOT_FOUND;
-    return user;
+    try {
+        const user = await User.findOne({ [fieldName]: value });
+        if (!user) {
+            throw errorMsgs.USER_NOT_FOUND;
+        }
+        return user;
+    } catch (error) {
+        throw error;
+    }
 };
 
 exports.signup = async (req, res) => {
@@ -65,15 +71,14 @@ exports.changePassword = (req, res) => {
 
 exports.signin = async (req, res) => {
     try {
-        const { userEmail, userPass } = req.body;
+        const { email, password } = req.body;
+        const user = await findUser("email", email);
 
-        const user = await findUser("email", userEmail);
-
-        if (!user) {
+        if (!email || !password) {
             throw errorMsgs.USER_NOT_FOUND;
         }
 
-        if (user.password !== userPass) {
+        if (user.password !== req.body.password) {
             throw errorMsgs.INVALID_PASSWORD;
         }
 
@@ -85,7 +90,8 @@ exports.signin = async (req, res) => {
         });
 
         if (token) {
-            await User.update({ token }, { where: { id: user.id } });
+            user.token = token;
+            user.save();
         }
 
         const userData = {
