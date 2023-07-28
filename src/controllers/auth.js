@@ -31,13 +31,14 @@ exports.forgetPassword = async (req, res) => {
     try {
         const { email, new_password, confirm_password } = req.body;
 
-        if (email !== confirm_password) {
+        if (new_password !== confirm_password) {
             throw errorMsgs.PASSWORD_NOT_MATCH;
         }
 
         const user = await findUser("email", email);
 
         user.password = new_password;
+        await user.save();
 
         return res.json(errorMsgs.PASSWORD_RESET);
     } catch (error) {
@@ -46,7 +47,7 @@ exports.forgetPassword = async (req, res) => {
     }
 };
 
-exports.changePassword = (req, res) => {
+exports.changePassword = async (req, res) => {
     try {
         const { email, current_password, new_password, confirm_password } = req.body;
 
@@ -61,6 +62,8 @@ exports.changePassword = (req, res) => {
         }
 
         user.password = new_password;
+
+        await user.save();
 
         return res.json(errorMsgs.PASSWORD_RESET);
     } catch (error) {
